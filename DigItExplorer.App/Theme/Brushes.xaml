@@ -1,0 +1,40 @@
+<!-- Role-based brushes mapping dynamic Palette colors to UI elements, shared verbatim by the Dig It!
+     desktop tools: a note naming a screen names the tool that has it. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="PanelBrush" Color="{DynamicResource PanelColor}" />
+    <SolidColorBrush x:Key="TabInactiveBrush" Color="{DynamicResource TabInactiveColor}" />
+    <SolidColorBrush x:Key="StatusBarBrush" Color="{DynamicResource StatusBarColor}" />
+
+    <SolidColorBrush x:Key="HoverBrush" Color="{DynamicResource HoverColor}" />
+    <SolidColorBrush x:Key="SelectionBrush" Color="{DynamicResource SelectionColor}" />
+    <SolidColorBrush x:Key="TitleBarHoverBrush" Color="{DynamicResource TitleBarHoverColor}" />
+
+    <SolidColorBrush x:Key="MenuHeaderBrush" Color="{DynamicResource MenuHeaderColor}" />
+    <SolidColorBrush x:Key="MenuPopupBrush" Color="{DynamicResource MenuPopupColor}" />
+    <SolidColorBrush x:Key="MenuPopupBorderBrush" Color="{DynamicResource MenuPopupBorderColor}" />
+
+    <SolidColorBrush x:Key="LinkBrush" Color="{DynamicResource LinkColor}" />
+    <SolidColorBrush x:Key="LinkHoverBrush" Color="{DynamicResource LinkHoverColor}" />
+    <SolidColorBrush x:Key="AuthorLinkHoverBrush" Color="{DynamicResource AuthorLinkHoverColor}" />
+    <SolidColorBrush x:Key="HeartBrush" Color="{DynamicResource HeartColor}" />
+
+    <SolidColorBrush x:Key="EmphasisBrush" Color="{DynamicResource EmphasisColor}" />
+    <SolidColorBrush x:Key="MutedIconBrush" Color="{DynamicResource MutedIconColor}" />
+    <SolidColorBrush x:Key="ToggleCheckedFillBrush" Color="{DynamicResource ToggleCheckedFillColor}" />
+
+    <SolidColorBrush x:Key="LayerMarkBrush" Color="{DynamicResource PrimaryColor}" />
+
+    <SolidColorBrush x:Key="StageOverlayBrush" Color="{DynamicResource StageOverlayColor}" />
+    <SolidColorBrush x:Key="CheckerDarkBrush" Color="{DynamicResource CheckerDarkColor}" />
+    <SolidColorBrush x:Key="CheckerLightBrush" Color="{DynamicResource CheckerLightColor}" />
+    <SolidColorBrush x:Key="StageBlankBrush" Color="{DynamicResource StageBlankColor}" />
+
+    <SolidColorBrush x:Key="CodeBackgroundBrush" Color="{DynamicResource CodeBackgroundColor}" />
+    <SolidColorBrush x:Key="QuoteBarBrush" Color="{DynamicResource QuoteBarColor}" />
+
+    <SolidColorBrush x:Key="CaptionCloseBrush" Color="{DynamicResource CaptionCloseColor}" />
+    <SolidColorBrush x:Key="CaptionCloseIconBrush" Color="{DynamicResource CaptionCloseIconColor}" />
+
+</ResourceDictionary>

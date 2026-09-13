@@ -1,0 +1,106 @@
+<UserControl x:Class="DigItExplorer.App.Views.InfoPane"
+             x:ClassModifier="internal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:DigItExplorer.App.Converters"
+             xmlns:info="clr-namespace:DigItExplorer.Core.Knowledge.Info;assembly=DigItExplorer.Core"
+             xmlns:ui="clr-namespace:DigItExplorer.Core.Ui;assembly=DigItExplorer.Core"
+             xmlns:viewModels="clr-namespace:DigItExplorer.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewModels:InfoViewModel}">
+
+    <UserControl.Resources>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+        <DataTemplate x:Key="InfoRowTemplate">
+            <Grid Margin="0,1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="88" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="11" Margin="0,0,6,0"
+                           TextWrapping="Wrap" Foreground="{DynamicResource SecondaryTextBrush}"
+                           Visibility="{Binding LabelFile, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}" />
+                <TextBlock Grid.Column="0" FontSize="11" Margin="0,0,6,0" TextWrapping="Wrap"
+                           Visibility="{Binding LabelFile, Converter={StaticResource NullToVisibilityConverter}}"><Hyperlink
+                        Style="{StaticResource InfoLinkStyle}" Tag="{Binding LabelFile}"
+                        Click="FileLink_Click"><Run Text="{Binding Label, Mode=OneWay}" /></Hyperlink></TextBlock>
+                <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="11"
+                           TextWrapping="Wrap" Foreground="{DynamicResource PrimaryTextBrush}"
+                           Visibility="{Binding ValueFile, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}" />
+                <TextBlock Grid.Column="1" FontSize="11" TextWrapping="Wrap"
+                           Visibility="{Binding ValueFile, Converter={StaticResource NullToVisibilityConverter}}"><Hyperlink
+                        Style="{StaticResource InfoLinkStyle}" Tag="{Binding ValueFile}"
+                        Click="FileLink_Click"><Run Text="{Binding Value, Mode=OneWay}" /></Hyperlink></TextBlock>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="0,8,0,0">
+            <TextBlock Margin="0,0,0,10" FontSize="11" TextWrapping="Wrap"
+                       Visibility="{Binding Back, Converter={StaticResource NullToVisibilityConverter}}"><Hyperlink
+                    Style="{StaticResource InfoLinkStyle}" Click="BackLink_Click"><Run
+                    Text="{Binding Back.Label, Mode=OneWay, StringFormat='← {0}'}" /></Hyperlink></TextBlock>
+
+            <ItemsControl ItemsSource="{Binding Sections}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="{Binding Title}" FontWeight="Bold" Margin="0,0,0,4"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <ItemsControl ItemsSource="{Binding Rows}"
+                                          ItemTemplate="{StaticResource InfoRowTemplate}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <StackPanel>
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Damage}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                <TextBlock Text="Damaged" FontWeight="Bold" Margin="0,0,0,4"
+                           Foreground="{DynamicResource EmphasisBrush}" />
+                <Border BorderBrush="{DynamicResource EmphasisBrush}" BorderThickness="2,0,0,0" Padding="8,0,0,0"
+                        Margin="0,0,0,12">
+                    <TextBlock FontSize="11" TextWrapping="Wrap" LineHeight="15"
+                               Foreground="{DynamicResource SecondaryTextBrush}"><Run
+                            Text="{Binding Damage, Mode=OneWay}" /><Run
+                            Text="{x:Static info:DamageNote.RepairLead}" /><Hyperlink
+                            Style="{StaticResource InfoLinkStyle}"
+                            DataContext="{x:Static ui:DigItTools.Patcher}"
+                            NavigateUri="{Binding Link, Mode=OneTime}"
+                            RequestNavigate="ToolLink_RequestNavigate"><Run
+                                Text="{Binding Name, Mode=OneTime}" /></Hyperlink><Run
+                            Text="{x:Static info:DamageNote.RepairEnd}" /></TextBlock>
+                </Border>
+            </StackPanel>
+
+            <StackPanel>
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Note}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                <TextBlock Text="Notes" FontWeight="Bold" Margin="0,0,0,4"
+                           Foreground="{DynamicResource PrimaryTextBrush}" />
+                <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="2,0,0,0" Padding="8,0,0,0">
+                    <TextBlock Text="{Binding Note}" FontSize="11" TextWrapping="Wrap" LineHeight="15"
+                               Foreground="{DynamicResource SecondaryTextBrush}" />
+                </Border>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

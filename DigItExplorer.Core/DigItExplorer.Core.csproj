@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Always optimize Core, Debug included: unoptimized OPL2 emulation (Audio/NukedOpl) runs at only
+         ~3× real time, making music seeks crawl, and Core is rarely stepped through in a debugger. -->
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Core ships as its own public repo, so its `public` surface is an API contract with strangers. -->
+    <InternalsVisibleTo Include="DigItExplorer.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Wildcard rather than a list: a page counts only once it is written here and named in
+         HelpContents, and a test enforces both. -->
+    <EmbeddedResource Include="Help\Content\*.md" />
+  </ItemGroup>
+
+</Project>

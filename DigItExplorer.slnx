@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="DigItExplorer.App/DigItExplorer.App.csproj" />
+  <Project Path="DigItExplorer.Core/DigItExplorer.Core.csproj" />
+  <Project Path="DigItExplorer.Tests/DigItExplorer.Tests.csproj" />
+</Solution>

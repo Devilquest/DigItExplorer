@@ -1,0 +1,63 @@
+<views:DialogWindow x:Class="DigItExplorer.App.Views.ExportDialog"
+                    x:ClassModifier="internal"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:views="clr-namespace:DigItExplorer.App.Views"
+                    Title="Export"
+                    UseLayoutRounding="True" SnapsToDevicePixels="True">
+
+    <StackPanel Margin="22,18,22,16" MinWidth="330" MaxWidth="440">
+        <TextBlock x:Name="SubjectText" TextWrapping="Wrap" FontSize="15"
+                   Foreground="{DynamicResource PrimaryTextBrush}" />
+        <TextBlock x:Name="IncludesText" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0"
+                   Foreground="{DynamicResource SecondaryTextBrush}" />
+
+        <TextBlock x:Name="SingleFormatText" Text="This Image as a PNG" Margin="0,18,0,0"
+                   FontSize="13" Foreground="{DynamicResource PrimaryTextBrush}" />
+        <StackPanel x:Name="FormatChoice" Margin="0,18,0,0" Visibility="Collapsed">
+            <RadioButton x:Name="FormatCurrent" GroupName="Format" Content="This Frame as a PNG"
+                         HorizontalAlignment="Left" Checked="Format_Checked" />
+            <RadioButton x:Name="FormatSequence" GroupName="Format" Margin="0,8,0,0" Visibility="Collapsed"
+                         HorizontalAlignment="Left" Checked="Format_Checked" />
+            <RadioButton x:Name="FormatStrip" GroupName="Format" Margin="0,8,0,0" Visibility="Collapsed"
+                         HorizontalAlignment="Left" Checked="Format_Checked" />
+            <RadioButton x:Name="FormatGif" GroupName="Format" Margin="0,8,0,0" Visibility="Collapsed"
+                         Content="The Animation as a GIF"
+                         HorizontalAlignment="Left" Checked="Format_Checked" />
+        </StackPanel>
+
+        <Grid Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Scale" Margin="0,0,16,0" VerticalAlignment="Center"
+                       FontSize="13" Foreground="{DynamicResource SecondaryTextBrush}" />
+            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+                <RadioButton x:Name="Scale1" Content="1×" GroupName="Scale" Margin="0,0,18,0"
+                             Checked="Scale_Checked" />
+                <RadioButton x:Name="Scale2" Content="2×" GroupName="Scale" Margin="0,0,18,0"
+                             Checked="Scale_Checked" />
+                <RadioButton x:Name="Scale4" Content="4×" GroupName="Scale"
+                             Checked="Scale_Checked" />
+            </StackPanel>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Size" Margin="0,12,16,0" VerticalAlignment="Center"
+                       FontSize="13" Foreground="{DynamicResource SecondaryTextBrush}" />
+            <TextBlock x:Name="SizeText" Grid.Row="1" Grid.Column="1" Margin="0,12,0,0" VerticalAlignment="Center"
+                       TextWrapping="Wrap"
+                       FontSize="13" Foreground="{DynamicResource PrimaryTextBrush}" />
+        </Grid>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+            <Button x:Name="ExportButton" Content="Export" IsDefault="True"
+                    MinWidth="88" Padding="12,4" Margin="0,0,8,0" Click="Export_Click" />
+            <Button Content="Cancel" IsCancel="True" MinWidth="88" Padding="12,4" />
+        </StackPanel>
+    </StackPanel>
+</views:DialogWindow>

@@ -1,0 +1,169 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+# gh release create writes to the repository.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Read the version from the tag
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag -replace "^v", ""
+          if ($version -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') {
+            throw "Tag '$tag' is not vMAJOR.MINOR.PATCH with an optional prerelease suffix."
+          }
+          "TAG=$tag"         | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+          "VERSION=$version" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build DigItExplorer.slnx -c Release "-p:Version=$env:VERSION"
+
+      - name: Test
+        shell: pwsh
+        run: dotnet test DigItExplorer.slnx -c Release --no-build "-p:Version=$env:VERSION"
+
+      - name: Publish the three builds
+        shell: pwsh
+        run: |
+          $project = "DigItExplorer.App/DigItExplorer.App.csproj"
+          $common  = @($project, "-c", "Release", "-r", "win-x64", "-p:Version=$env:VERSION", "-p:DebugType=none")
+
+          dotnet publish @common --self-contained false -o publish/folder
+          dotnet publish @common --self-contained false -p:PublishSingleFile=true -o publish/single
+          dotnet publish @common --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
+            -o publish/standalone
+
+      - name: Name the executables as the documentation does
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory dist | Out-Null
+
+          # The project is DigItExplorer.App, so the host it builds carries that name; the apphost resolves
+          # its assembly by the name compiled into it and not by its own filename, so renaming is safe.
+          Rename-Item publish/folder/DigItExplorer.App.exe DigItExplorer.exe
+
+          # Core/Audio is LGPL-2.1 while the rest is MIT, so both texts travel with the binary.
+          New-Item -ItemType Directory publish/folder/Licenses | Out-Null
+          Copy-Item LICENSE                          publish/folder/Licenses/MIT.txt
+          Copy-Item DigItExplorer.Core/Audio/LICENSE publish/folder/Licenses/Audio-LGPL-2.1.txt
+
+          @(
+            "Dig It! Explorer - Audio Engine Attribution and License Notice"
+            ""
+            "Dig It! Explorer is released under the MIT License (see MIT.txt),"
+            "with the following exception:"
+            ""
+            "The audio synthesis and playback engine in Dig It! Explorer is licensed"
+            "under the GNU Lesser General Public License, version 2.1 (see Audio-LGPL-2.1.txt)."
+            ""
+            "Third-party upstream projects:"
+            "- LDS music player: ported from AdPlug (https://github.com/adplug/adplug)."
+            "- OPL2/OPL3 FM synthesis: derived from Nuked-OPL3 by nukeykt"
+            "  (https://github.com/nukeykt/Nuked-OPL3), via the C# port NukedOpl"
+            "  by SaxxonPike (https://github.com/SaxxonPike/NukedOpl)."
+            ""
+            "The complete source code for Dig It! Explorer, including all audio"
+            "components and build instructions, is available at:"
+            "https://github.com/Devilquest/DigItExplorer"
+          ) | Out-File publish/folder/Licenses/Audio-NOTICE.txt -Encoding utf8
+
+          Compress-Archive -Path publish/folder/* -DestinationPath dist/DigItExplorer-win-x64.zip
+
+          Copy-Item publish/single/DigItExplorer.App.exe     dist/DigItExplorer.exe
+          Copy-Item publish/standalone/DigItExplorer.App.exe dist/DigItExplorer-Standalone.exe
+
+          Get-ChildItem dist | Select-Object Name, @{ n = "MB"; e = { [math]::Round($_.Length / 1MB, 1) } }
+
+      - name: Compose the release notes
+        shell: pwsh
+        run: |
+          # GitHub's own generated notes list merged pull requests, and this repository is committed to
+          # directly, so the changelog the README already carries is the primary source. If missing,
+          # the release falls back to a draft so missing notes do not fail an otherwise good build.
+          $number  = $env:VERSION -replace '-.*$', ''
+          $pattern = '(?ms)^### \[' + [regex]::Escape($number) + '\]\s*(.*?)(?=^### |^---\s*$|\z)'
+          $section = [regex]::Match((Get-Content README.md -Raw), $pattern)
+
+          $isDraft = $false
+          if ($section.Success) {
+            $whatsNew = $section.Groups[1].Value.Trim()
+          } else {
+            Write-Host "::warning::README.md has no '### [$number]' changelog section. Publishing as draft."
+            $whatsNew = "*Release notes were not found in README.md for version $number. Edit this draft to add them before publishing.*"
+            $isDraft = $true
+          }
+          "IS_DRAFT=$isDraft" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+
+          # An asset's address is composed rather than looked up: gh has not uploaded any of them yet.
+          $downloads = "${{ github.server_url }}/${{ github.repository }}/releases/download/$env:TAG"
+          $source    = "${{ github.server_url }}/${{ github.repository }}/blob/$env:TAG"
+
+          $assets = [ordered]@{
+            "DigItExplorer-Standalone.exe" = "One file. Nothing else to install."
+            "DigItExplorer.exe"            = "One file. Needs the .NET 10 Desktop Runtime."
+            "DigItExplorer-win-x64.zip"    = "Loose files. Needs the .NET 10 Desktop Runtime."
+          }
+
+          # Single-quoted, so the backticks around the hash stay markdown rather than becoming escapes.
+          $row = '| [{0}]({1}/{0}) | {2} | `{3}` |'
+          $rows = foreach ($name in $assets.Keys) {
+            $row -f $name, $downloads, $assets[$name],
+                    (Get-FileHash "dist/$name" -Algorithm SHA256).Hash.ToLower()
+          }
+
+          @(
+            "### What's new"
+            ""
+            $whatsNew
+            ""
+            "### Download"
+            ""
+            "| File | | SHA-256 |"
+            "|---|---|---|"
+            $rows
+            ""
+            "### License"
+            ""
+            "MIT, except ``DigItExplorer.Core/Audio/``, which is LGPL-2.1 and derived from AdPlug and Nuked-OPL3.  "
+            "Both texts are inside the zip under ``Licenses/``, and in the source at [LICENSE]($source/LICENSE) and [DigItExplorer.Core/Audio/LICENSE]($source/DigItExplorer.Core/Audio/LICENSE)."
+          ) | Out-File release-notes.md -Encoding utf8
+
+          Get-Content release-notes.md
+
+      - name: Publish the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A suffixed tag is a trial build, and GitHub keeps a prerelease off the repository's front page.
+          $flags = @()
+          if ($env:VERSION -like "*-*") { $flags += "--prerelease" }
+          if ($env:IS_DRAFT -eq "True") { $flags += "--draft" }
+
+          gh release create $env:TAG `
+            dist/DigItExplorer-win-x64.zip `
+            dist/DigItExplorer.exe `
+            dist/DigItExplorer-Standalone.exe `
+            --title "Dig It! Explorer $env:VERSION" `
+            --notes-file release-notes.md `
+            @flags

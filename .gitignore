@@ -1,0 +1,23 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# Publish output
+publish/
+dist/
+*.publish.xml
+
+# IDE / editor
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Per-machine test config (see digit.tests.local.json.example)
+digit.tests.local.json
+
+# OS
+Thumbs.db
+.DS_Store

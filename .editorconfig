@@ -1,0 +1,42 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+[*.cs]
+indent_size = 4
+
+# File-scoped namespaces everywhere (see EXPLORER_ARCHITECTURE.md A8/§3)
+csharp_style_namespace_declarations = file_scoped:warning
+
+# _camelCase private/internal fields, no this. qualification
+dotnet_naming_rule.private_fields_underscore_camel_case.severity = warning
+dotnet_naming_rule.private_fields_underscore_camel_case.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore_camel_case.style = underscore_camel_case
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private, internal
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+
+csharp_new_line_before_open_brace = all
+csharp_prefer_braces = true:suggestion
+
+# C10 enforcement. The App is an executable: nothing references it, so a `public` type there hides the
+# real surface instead of declaring one. Scoped to the App on purpose: Core is a library whose `public`
+# surface is its published API, and Tests must keep test classes public or xUnit stops discovering them.
+[DigItExplorer.App/**.cs]
+dotnet_diagnostic.CA1515.severity = warning
+
+[*.xaml]
+indent_size = 4
+
+[*.{yml,yaml,json}]
+indent_size = 2

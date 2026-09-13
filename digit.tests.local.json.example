@@ -1,0 +1,4 @@
+{
+  "_comment": "Copy this file to digit.tests.local.json and set gameDir if the tests do not find your DIGIT/ install on their own. The copy is gitignored. A relative path is resolved against this file's own folder, so \"../../DIGIT\" works; an absolute path works too. Only this folder and the folders between it and the test binary are searched, never anything above the repository. See DigItExplorer.Tests/Support/TestPaths.cs for the full resolution order.",
+  "gameDir": "D:/Path/To/DIGIT"
+}

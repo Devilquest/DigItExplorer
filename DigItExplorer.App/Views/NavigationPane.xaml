@@ -1,0 +1,198 @@
+<UserControl x:Class="DigItExplorer.App.Views.NavigationPane"
+             x:ClassModifier="internal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             xmlns:models="clr-namespace:DigItExplorer.App.Models"
+             xmlns:viewModels="clr-namespace:DigItExplorer.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewModels:NavigationViewModel}">
+
+    <UserControl.Resources>
+        <HierarchicalDataTemplate x:Key="TreeNodeTemplate" DataType="{x:Type models:TreeNode}"
+                                  ItemsSource="{Binding VisibleChildren}">
+            <TextBlock Text="{Binding Caption}" />
+        </HierarchicalDataTemplate>
+        <Style x:Key="TreeNodeContainerStyle" TargetType="TreeViewItem"
+               BasedOn="{StaticResource {x:Type TreeViewItem}}">
+            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+            <Setter Property="IsEnabled" Value="{Binding IsEnabled, Mode=OneWay}" />
+            <Setter Property="Focusable" Value="{Binding IsSelectable, Mode=OneWay}" />
+            <EventSetter Event="MouseLeftButtonDown" Handler="TreeViewItem_MouseLeftButtonDown" />
+            <EventSetter Event="Selected" Handler="TreeViewItem_Selected" />
+            <!-- Handled on item level to intercept before the TreeView ScrollViewer. -->
+            <EventSetter Event="RequestBringIntoView" Handler="TreeViewItem_RequestBringIntoView" />
+            <Style.Resources>
+                <SolidColorBrush x:Key="PrimaryBrush" Color="{DynamicResource SelectionColor}" />
+                <SolidColorBrush x:Key="DarkDefaultBrush" Color="{DynamicResource SelectionColor}" />
+                <SolidColorBrush x:Key="SecondaryRegionBrush" Color="{DynamicResource HoverColor}" />
+            </Style.Resources>
+        </Style>
+
+    </UserControl.Resources>
+
+    <!-- The order of these tabs is the index SelectedTreeTab carries. -->
+    <TabControl Style="{StaticResource PanelTabControl}"
+                SelectedIndex="{Binding SelectedTreeTab, Mode=TwoWay}"
+                BorderThickness="0,0,1,0"
+                BorderBrush="{DynamicResource BorderBrush}">
+        <TabItem Header="Resources" IsEnabled="{Binding IsResourcesTabAvailable}">
+            <TabItem.Style>
+                <Style TargetType="TabItem" BasedOn="{StaticResource PanelTabItem}">
+                    <Style.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="ToolTip" Value="Resources view is unavailable for this copy of the game" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TabItem.Style>
+            <DockPanel Margin="0,8,0,0">
+                <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <TextBox x:Name="ResourceFilterBox" Padding="6,2,24,2"
+                             Text="{Binding ResourcesFilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Search Resources">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource SearchPlaceholderStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=ResourceFilterBox}" Value="">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <Button x:Name="ResourceClearButton" Content="✕" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0" Cursor="Hand"
+                            ToolTip="Clear"
+                            Command="{Binding ClearResourcesFilterCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding Text, ElementName=ResourceFilterBox}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Style="{StaticResource SmallToolbarButtonStyle}"
+                            Command="{Binding ExpandAllCommand}" CommandParameter="Resources" ToolTip="Expand All">
+                        <Path Width="10" Height="10" Stretch="Uniform"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                              StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                              Data="M4,5.5 L7,2.5 L10,5.5 M4,8.5 L7,11.5 L10,8.5" />
+                    </Button>
+                    <Button Style="{StaticResource SmallToolbarButtonStyle}"
+                            Command="{Binding CollapseAllCommand}" CommandParameter="Resources" ToolTip="Collapse All">
+                        <Path Width="10" Height="10" Stretch="Uniform"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                              StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                              Data="M4,2.5 L7,5.5 L10,2.5 M4,11.5 L7,8.5 L10,11.5" />
+                    </Button>
+                </StackPanel>
+                <Grid>
+                    <TreeView x:Name="ResourcesTree" FontFamily="Consolas" FontSize="12"
+                              BorderThickness="0" Background="Transparent"
+                              ItemsSource="{Binding ResourcesItems}"
+                              ItemTemplate="{StaticResource TreeNodeTemplate}"
+                              ItemContainerStyle="{StaticResource TreeNodeContainerStyle}"
+                              SelectedItemChanged="Tree_SelectedItemChanged" />
+                    <TextBlock Text="No matches" Style="{StaticResource EmptyTreeMessage}"
+                               Visibility="{Binding ResourcesEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </Grid>
+            </DockPanel>
+        </TabItem>
+        <TabItem Header="Raw" Style="{StaticResource PanelTabItem}">
+            <DockPanel Margin="0,8,0,0">
+                <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <TextBox x:Name="FilterBox" Padding="6,2,24,2"
+                             Text="{Binding RawFilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Search Files">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource SearchPlaceholderStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=FilterBox}" Value="">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <Button x:Name="ClearButton" Content="✕" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0" Cursor="Hand"
+                            ToolTip="Clear"
+                            Command="{Binding ClearRawFilterCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding Text, ElementName=FilterBox}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Style="{StaticResource SmallToolbarButtonStyle}"
+                            Command="{Binding ExpandAllCommand}" CommandParameter="Raw" ToolTip="Expand All">
+                        <Path Width="10" Height="10" Stretch="Uniform"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                              StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                              Data="M4,5.5 L7,2.5 L10,5.5 M4,8.5 L7,11.5 L10,8.5" />
+                    </Button>
+                    <Button Style="{StaticResource SmallToolbarButtonStyle}"
+                            Command="{Binding CollapseAllCommand}" CommandParameter="Raw" ToolTip="Collapse All">
+                        <Path Width="10" Height="10" Stretch="Uniform"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                              StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                              Data="M4,2.5 L7,5.5 L10,2.5 M4,11.5 L7,8.5 L10,11.5" />
+                    </Button>
+                </StackPanel>
+                <Grid>
+                    <TreeView x:Name="RawTree" FontFamily="Consolas" FontSize="12"
+                              BorderThickness="0" Background="Transparent"
+                              ItemsSource="{Binding RawItems}"
+                              ItemTemplate="{StaticResource TreeNodeTemplate}"
+                              ItemContainerStyle="{StaticResource TreeNodeContainerStyle}"
+                              SelectedItemChanged="Tree_SelectedItemChanged" />
+                    <TextBlock Text="No matches" Style="{StaticResource EmptyTreeMessage}"
+                               Visibility="{Binding RawEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </Grid>
+            </DockPanel>
+        </TabItem>
+    </TabControl>
+</UserControl>
